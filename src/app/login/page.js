@@ -56,11 +56,8 @@ export default function LoginPage() {
         return
       }
 
-      // ✅ Redirect user safely after login
-      // If a redirect query is provided, go there; otherwise, default to /patient-portal
       const redirectTo = searchParams.get("redirect") || "/patient-portal"
-      router.replace(redirectTo) // <- replaces current page in history (no flicker)
-
+      router.replace(redirectTo)
     } catch (err) {
       console.error(err)
       setError("Something went wrong. Please try again.")

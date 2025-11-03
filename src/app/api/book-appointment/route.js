@@ -1,11 +1,13 @@
-import { createClient } from "@/lib/supabase/server";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    const body = await req.json();
-    console.log("📩 Received body:", body);
+    const cookieStore = await cookies();
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
+    const body = await req.json();
     const { patientName, doctorName, appointmentTime } = body;
 
     if (!patientName || !doctorName) {
@@ -15,23 +17,18 @@ export async function POST(req) {
       );
     }
 
-    const supabase = await createClient();
-
-    // ✅ Get current user
     const {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      console.error("User not authenticated:", userError);
       return NextResponse.json(
         { message: "User not authenticated. Please log in again." },
         { status: 401 }
       );
     }
 
-    // ✅ Insert appointment with logged-in user's ID
     const { data, error } = await supabase
       .from("appointments")
       .insert([
@@ -46,23 +43,19 @@ export async function POST(req) {
       ])
       .select();
 
-    if (error) {
-      console.error("❌ Supabase insert error:", error);
-      return NextResponse.json(
-        { message: "Failed to book appointment.", error },
-        { status: 500 }
-      );
-    }
+    if (error) throw error;
 
-    console.log("✅ Appointment inserted:", data);
     return NextResponse.json(
       { message: "Appointment booked successfully.", data },
       { status: 200 }
     );
   } catch (error) {
-    console.error("💥 Unexpected server error:", error);
+    console.error("❌ Error booking appointment:", error);
     return NextResponse.json(
-      { message: "An unexpected error occurred.", error: error.message },
+      {
+        message: "An error occurred while booking appointment.",
+        error: error.message,
+      },
       { status: 500 }
     );
   }
