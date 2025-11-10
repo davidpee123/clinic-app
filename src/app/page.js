@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
+import HowItWorksSection from '@/components/HowItWorksSection';
+import FeatureDemoSection from '@/components/FeatureDemoSection';
 import {
   ChevronLeft,
   ChevronRight,
@@ -19,25 +21,24 @@ import {
 } from "lucide-react"
 
 const heroSlides = [
+  // SLIDE 1: Existing Image Slide (Kept)
   {
+    type: "image",
     image: "/images/hospitals/kafeel.png",
     title: "Excellence in Healthcare",
     subtitle:
       "Providing compassionate, comprehensive medical care with state-of-the-art technology and experienced professionals.",
     cta: "Book Appointment",
+    ctaLink: "/doctors",
   },
+
+  // SLIDE 2: NEW Form/CTA Slide 1 (Revised)
   {
-    image: "/medical-team-of-doctors-and-nurses-in-hospital-cor.jpg",
-    title: "Expert Medical Team",
-    subtitle:
-      "Our board-certified physicians and specialists are dedicated to delivering personalized treatment plans.",
-    cta: "Meet Our Doctors",
-  },
-  {
-    image: "/modern-medical-equipment-and-technology-in-hospita.jpg",
-    title: "Advanced Technology",
-    subtitle: "Equipped with the latest medical technology to ensure accurate diagnosis and effective treatment.",
-    cta: "Our Services",
+    type: "form",
+    leftTitle: "Your Health Journey Starts Now. Book with Ease!",
+    leftSubtitle: "Secure your time slot instantly. Use our platform to connect with your preferred specialist and manage your calendar.",
+    leftCta: "Schedule Appointment",
+    leftCtaLink: "/doctors",
   },
 ]
 
@@ -72,26 +73,28 @@ const stats = [
 ]
 
 export default function HomePage() {
+
   const [currentSlide, setCurrentSlide] = useState(0)
+  const totalSlides = heroSlides.length;
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+      setCurrentSlide((prev) => (prev + 1) % totalSlides)
     }, 5000)
     return () => clearInterval(timer)
-  }, [])
+  }, [totalSlides])
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+    setCurrentSlide((prev) => (prev + 1) % totalSlides)
   }
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)
+    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides)
   }
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header (No change) */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -108,7 +111,7 @@ export default function HomePage() {
               <a href="#services" className="text-gray-700 hover:text-blue-600 transition-colors">
                 Services
               </a>
-              <a href="#doctors" className="text-gray-700 hover:text-blue-600 transition-colors">
+              <a href="/doctors" className="text-gray-700 hover:text-blue-600 transition-colors">
                 Doctors
               </a>
               <a href="#about" className="text-gray-700 hover:text-blue-600 transition-colors">
@@ -116,6 +119,9 @@ export default function HomePage() {
               </a>
               <a href="#contact" className="text-gray-700 hover:text-blue-600 transition-colors">
                 Contact
+              </a>
+              <a href="/register-doctor" className="text-gray-700 hover:text-blue-600 transition-colors">
+                become Doctor
               </a>
             </nav>
             <div className="flex items-center gap-4">
@@ -132,15 +138,14 @@ export default function HomePage() {
                 </Link>
               </Button>
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700" asChild>
-                <Link href="/book-appointment">Book Appointment</Link>
+                <Link href="/doctors">Book Appointment</Link>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* The rest of the page remains the same */}
-      {/* Hero Slider */}
+      {/* Hero Slider (UPDATED with Conditional Rendering) */}
       <section id="home" className="relative h-[600px] overflow-hidden">
         {heroSlides.map((slide, index) => (
           <div
@@ -148,38 +153,129 @@ export default function HomePage() {
             className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? "opacity-100" : "opacity-0"
               }`}
           >
-            <div className="relative h-full">
-              <img src={slide.image || "/placeholder.svg"} alt={slide.title} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/40" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center text-white max-w-4xl px-4">
-                  <h1 className="text-5xl md:text-6xl font-bold mb-6 text-balance">{slide.title}</h1>
-                  <p className="text-xl md:text-2xl mb-8 text-balance opacity-90">{slide.subtitle}</p>
-                  <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3">
-                    {slide.cta}
-                  </Button>
+            {slide.type === "image" ? (
+              // --- IMAGE SLIDE CONTENT ---
+              <div className="relative h-full">
+                <img
+                  src={slide.image || "/placeholder.svg"}
+                  alt={slide.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/40" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center text-white max-w-4xl px-4">
+                    <h1 className="text-5xl md:text-6xl font-bold mb-6 text-balance">
+                      {slide.title}
+                    </h1>
+                    <p className="text-xl md:text-2xl mb-8 text-balance opacity-90">
+                      {slide.subtitle}
+                    </p>
+                    <Button
+                      size="lg"
+                      className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-3"
+                      asChild
+                    >
+                      <Link href={slide.ctaLink || "#"}>{slide.cta}</Link>
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              // --- FORM/CTA SLIDE CONTENT ---
+              <div className="relative h-full bg-[#1b61fc] flex items-center justify-center px-4 py-8 md:py-16">
+                <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center gap-12 w-full">
+                  {/* Left side: Text and CTA */}
+                  <div className="text-center lg:text-left p-4">
+                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-6 text-balance">
+                      {slide.leftTitle}
+                    </h1>
+                    <p className="text-lg md:text-xl text-white mb-8 max-w-lg lg:max-w-none mx-auto lg:mx-0 text-balance">
+                      {slide.leftSubtitle}
+                    </p>
+                    <Button
+                      size="lg"
+                      className="bg-[#ff6900] hover:bg-[#d97726] text-lg px-8 py-3"
+                      asChild
+                    >
+                      <Link href={slide.leftCtaLink || "#"}>{slide.leftCta}</Link>
+                    </Button>
+                  </div>
+
+                  {/* Right side: The Sign-Up/Lead Form */}
+                  <div className="relative bg-white p-8 rounded-lg shadow-2xl max-w-md mx-auto w-full">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                      Request a Free Callback
+                    </h3>
+                    <form className="space-y-4">
+                      <div>
+                        <label htmlFor={`hero-name-${index}`} className="sr-only">Name</label>
+                        <input
+                          type="text"
+                          id={`hero-name-${index}`}
+                          placeholder="Full Name"
+                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor={`hero-phone-${index}`} className="sr-only">Phone</label>
+                        <input
+                          type="tel"
+                          id={`hero-phone-${index}`}
+                          placeholder="Phone Number"
+                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor={`hero-email-${index}`} className="sr-only">Email</label>
+                        <input
+                          type="email"
+                          id={`hero-email-${index}`}
+                          placeholder="Email Address (Optional)"
+                          className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`hero-terms-${index}`}
+                          className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                        />
+                        <label htmlFor={`hero-terms-${index}`} className="ml-2 text-sm text-gray-600">
+                          I agree to receive health updates.
+                        </label>
+                      </div>
+                      <Button
+                        type="submit"
+                        className="w-full bg-[#ff6900] hover:bg-[#d97726]  text-white font-bold py-3 px-4 rounded-md transition-colors"
+                      >
+                        Send Request
+                      </Button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         ))}
 
         {/* Navigation Arrows */}
         <button
           onClick={prevSlide}
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors"
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors z-10"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
         <button
           onClick={nextSlide}
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors"
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors z-10"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
 
         {/* Slide Indicators */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
           {heroSlides.map((_, index) => (
             <button
               key={index}
@@ -191,8 +287,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-blue-50">
+      {/* Stats Section (Padding reduced to py-12) */}
+      <section className="py-12 bg-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -205,8 +301,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-20">
+      {/* Services Section (Padding reduced to py-16) */}
+      <section id="services" className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge variant="secondary" className="mb-4">
@@ -234,8 +330,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="py-20 bg-gray-50">
+      <main>
+        {/* HowItWorksSection (Ensure padding is reduced in its own file) */}
+        <HowItWorksSection />
+      </main>
+
+      {/* --- NEW FIXED FEATURE DEMO SECTION HERE --- */}
+      <FeatureDemoSection />
+      {/* ------------------------------------------- */}
+
+      {/* About Section (Padding reduced to py-12) */}
+      <section id="about" className="py-12 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
@@ -281,8 +386,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-blue-600">
+      {/* CTA Section (No change) */}
+      <section className="py-16 bg-[#1c398e]">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-4xl font-bold text-white mb-6 text-balance">Ready to Schedule Your Appointment?</h2>
           <p className="text-xl text-blue-100 mb-8 text-balance">
@@ -307,7 +412,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Footer */}
+
       <footer className="bg-gray-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
@@ -349,6 +454,11 @@ export default function HomePage() {
                 <li>
                   <a href="#contact" className="text-gray-400 hover:text-white transition-colors">
                     Contact
+                  </a>
+                </li>
+                <li>
+                  <a href="/register-doctor" className="text-gray-400 hover:text-white transition-colors">
+                    become a Doctor
                   </a>
                 </li>
               </ul>
