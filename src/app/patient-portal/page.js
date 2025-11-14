@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Header from "@/components/Header";
+import Footer from "@/components/footer";
 import { CalendarDays, ClipboardList, HeartPulse, Stethoscope, Plus } from "lucide-react";
 
 export default function PatientDashboard() {
@@ -17,9 +19,9 @@ export default function PatientDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-6">
+    <div className="min-h-screen bg-gray-50">
+      < Header />
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <h1 className="text-2xl font-bold text-gray-800 mb-6">
           Hi, <span className="text-blue-600">Josh Emeka Peter</span> 👋
         </h1>
@@ -87,6 +89,7 @@ export default function PatientDashboard() {
           )}
         </div>
       </div>
+      < Footer />
     </div>
   );
 }

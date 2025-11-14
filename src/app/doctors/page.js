@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/footer";
+import Header from "@/components/Header";
 import DoctorCard from "@/components/DoctorCard";
 
 export default function DoctorsList() {
@@ -21,7 +21,7 @@ export default function DoctorsList() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
+      <Header />
 
       <main className="flex-1 max-w-6xl mx-auto px-6 py-10">
         <h1 className="text-3xl font-bold mb-8 text-center text-blue-800">

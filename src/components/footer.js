@@ -8,8 +8,8 @@ export default function Footer() {
               <div className="grid md:grid-cols-4 gap-8">
                 <div>
                   <div className="flex items-center gap-2 mb-6">
-                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                      <Heart className="w-5 h-5 text-white" />
+                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                      <Heart className="w-5 h-5 text-black" />
                     </div>
                     <span className="text-xl font-bold">MediCare Clinic</span>
                   </div>
@@ -81,7 +81,7 @@ export default function Footer() {
                     </div>
                     <div className="flex items-center gap-3">
                       <Phone className="w-5 h-5 text-blue-400" />
-                      <span className="text-gray-400">+1 (555) 123-4567</span>
+                      <span className="text-gray-400">+234 900 309 888 1</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <Mail className="w-5 h-5 text-blue-400" />

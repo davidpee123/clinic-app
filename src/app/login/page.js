@@ -1,5 +1,5 @@
 "use client"
-
+import Header from "@/components/Header"
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase/client"
@@ -67,38 +67,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <Heart className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-gray-900">
-                MediCare Clinic
-              </span>
-            </div>
-            <nav className="hidden md:flex items-center gap-8">
-              <Link href="/#home" className="text-gray-700 hover:text-blue-600">
-                Home
-              </Link>
-              <Link href="/#services" className="text-gray-700 hover:text-blue-600">
-                Services
-              </Link>
-              <Link href="/#doctors" className="text-gray-700 hover:text-blue-600">
-                Doctors
-              </Link>
-              <Link href="/#about" className="text-gray-700 hover:text-blue-600">
-                About
-              </Link>
-              <Link href="/#contact" className="text-gray-700 hover:text-blue-600">
-                Contact
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+
+      <Header />
 
       {/* Login Form */}
       <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -191,7 +161,7 @@ export default function LoginPage() {
 
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-500">
-            For staff login, please use the{" "}
+            For Admin login, please use the{" "}
             <Link href="/staff-login" className="text-blue-600 hover:underline">
               staff portal
             </Link>

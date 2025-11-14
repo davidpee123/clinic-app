@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Header from "@/components/Header";
 
 export default function StaffPortalPage() {
   const [staffData, setStaffData] = useState(null);
@@ -94,38 +95,8 @@ export default function StaffPortalPage() {
 
   return (
    <>
-  {/* ✅ Navbar */}
-  <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
-    <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
-      <h1 className="text-xl font-bold text-blue-600">Staff Portal</h1>
-      <div className="flex items-center gap-6">
-        <Link href="/queue-status" className="text-gray-700 hover:text-blue-600 font-medium">
-          Manage Queue
-        </Link>
-        <Link href="/" className="text-gray-700 hover:text-blue-600 font-medium">
-          Back to Home
-        </Link>
-        {staffData && (
-          <span className="text-sm text-gray-600">
-            Welcome, <span className="font-semibold">{staffData.firstName}</span>
-          </span>
-        )}
-        <button
-          onClick={() => {
-            localStorage.removeItem("staffData");
-            window.location.href = "/";
-          }}
-          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-        >
-          Sign Out
-        </button>
-      </div>
-    </div>
-  </nav>
-
-  {/* ✅ Page content */}
-  {/* 👇 Added mt-20 to push content below fixed navbar */}
-  <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 mt-20">
+   < Header />
+  
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
 
@@ -172,7 +143,7 @@ export default function StaffPortalPage() {
         )}
       </div>
     </div>
-  </div>
+  
 </>
 
   );
