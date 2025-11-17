@@ -1,7 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header';
-import Footer from '@/components/footer';
 import { HeartPulse, ChevronRight } from 'lucide-react';
 
 // Component for the pill-shaped condition button
@@ -55,7 +54,6 @@ const App = () => {
                     </div>
                 </div>
             </main>
-            < Footer />
         </div>
     );
 }
