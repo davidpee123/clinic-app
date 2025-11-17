@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import Footer from "@/components/footer";
 import Header from "@/components/Header";
 import DoctorCard from "@/components/DoctorCard";
 
@@ -38,8 +37,6 @@ export default function DoctorsList() {
           </div>
         )}
       </main>
-
-      <Footer />
     </div>
   );
 }
