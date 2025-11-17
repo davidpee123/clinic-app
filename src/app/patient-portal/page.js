@@ -5,7 +5,6 @@
 import { useState, useEffect } from "react";
 // Assuming Header, Footer, and API endpoint are correct
 import Header from "@/components/Header";
-import Footer from "@/components/footer"; 
 import { CalendarDays, ClipboardList, HeartPulse, Stethoscope, Plus } from "lucide-react";
 
 export default function PatientDashboard() {
@@ -105,7 +104,6 @@ export default function PatientDashboard() {
           )}
         </div>
       </div>
-      <Footer />
     </div>
   );
 }
