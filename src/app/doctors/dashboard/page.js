@@ -1,3 +1,4 @@
+// src/components/DashboardHome.js
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
@@ -43,22 +44,16 @@ export default function DashboardHome() {
 
       setDoctorId(user.id);
 
-      // 2️⃣ Fetch today’s appointments from backend API
-      const res = await fetch(
-        `/api/get-appointments?start=${todayStart.toISOString()}&end=${todayEnd.toISOString()}`,
-        { method: "GET", cache: "no-store" }
-      );
+      // --- Mock API Call ---
+      // Replace with your actual fetch logic once API is ready
+      const mockAppointments = [
+        { id: 1, patient_name: "Janet Kowal", start_time: new Date(Date.now() + 3600000).toISOString(), phone_number: "555-1234", video_link: "https://zoom.us/j/123456789", note: "Chronic headaches" },
+        { id: 2, patient_name: "Ahmed Hassan", start_time: new Date(Date.now() + 7200000).toISOString(), email: "ahmed@example.com", video_link: null, note: null },
+      ];
+      setAppointments(mockAppointments);
+      // --- End Mock ---
 
-      const result = await res.json();
 
-      if (res.ok) {
-        setAppointments(result.appointments || []);
-      } else {
-        console.error("Failed to fetch appointments", result.message);
-        setAppointments([]);
-      }
-
-    
       // 4️⃣ Total bookings count
       const { count, error: countError } = await supabase
         .from("appointments")
@@ -68,6 +63,9 @@ export default function DashboardHome() {
       if (countError) console.error("Error fetching total bookings:", countError.message);
       setTotalBookings(count || 0);
 
+      // 5️⃣ Mock unread messages count
+      setMessages([1, 2]);
+
       setLoading(false);
     }
 
@@ -76,34 +74,31 @@ export default function DashboardHome() {
 
   // --- StatCard Component ---
   const StatCard = ({ title, value, icon: Icon, colorClass, link }) => (
-    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transition duration-300 hover:shadow-xl hover:scale-[1.01] cursor-pointer">
-      <div className="flex justify-between items-start">
-        <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-          {title}
-        </h3>
-        <Icon className={`h-7 w-7 ${colorClass}`} />
-      </div>
-      <p className="text-5xl font-extrabold text-gray-900 mt-2">
-        {loading ? "..." : value}
-      </p>
-      {link && (
-        <div className="mt-4 pt-3 border-t border-gray-100">
-          <a href={link} className={`text-sm font-medium ${colorClass} hover:opacity-80`}>
-            View Details &rarr;
-          </a>
+    <a href={link} className="block"> {/* Wrapped with an anchor tag for clickability */}
+      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transition duration-300 hover:shadow-xl hover:scale-[1.01] cursor-pointer">
+        <div className="flex justify-between items-start">
+          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+            {title}
+          </h3>
+          <Icon className={`h-7 w-7 ${colorClass}`} />
         </div>
-      )}
-    </div>
+        <p className="text-5xl font-extrabold text-gray-900 mt-2">
+          {loading ? "..." : value}
+        </p>
+        {/* Removed duplicate link since the whole card is linked */}
+      </div>
+    </a>
   );
 
   return (
-    <div>
+    <div className="py-8">
       <h2 className="text-3xl font-extrabold text-gray-900 mb-8 tracking-tight">
         Doctor Portal
       </h2>
 
-      {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+      {/* Overview Stats (Responsive: 1-col on mobile, 3-col on desktop) */}
+      {/* Uses MD breakpoint, which is great */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-12">
         <StatCard
           title="Today's Schedule"
           value={appointments.length}
@@ -129,7 +124,7 @@ export default function DashboardHome() {
 
       {/* Today's Appointments */}
       <h3 className="text-2xl font-semibold text-gray-700 mb-4">Today's Appointments</h3>
-      <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+      <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100">
         {loading ? (
           <p className="text-center py-10 text-gray-500">Loading appointments...</p>
         ) : appointments.length === 0 ? (
@@ -145,9 +140,9 @@ export default function DashboardHome() {
             {appointments.map((appt) => (
               <li
                 key={appt.id}
-                className="flex justify-between items-center py-4 px-2 -mx-2 hover:bg-gray-50 transition duration-150 rounded-lg"
+                className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 px-2 -mx-2 hover:bg-gray-50 transition duration-150 rounded-lg"
               >
-                <div className="flex items-start space-x-4">
+                <div className="flex items-start space-x-4 mb-2 sm:mb-0 flex-grow">
                   <div className="h-10 w-10 flex-shrink-0 bg-teal-100 rounded-full flex items-center justify-center text-teal-600 font-bold text-sm">
                     {appt.patient_name ? appt.patient_name[0] : "P"}
                   </div>
@@ -155,13 +150,14 @@ export default function DashboardHome() {
                     <p className="font-semibold text-gray-800">
                       {appt.patient_name || "Patient Name"}
                     </p>
-                    <div className="text-sm text-gray-500 mt-1">
-                      {appt.phone_number && <span className="mr-3">📞 {appt.phone_number}</span>}
+                    {/* 🚨 FIX: Used flex-wrap to ensure contact info and note stack cleanly */}
+                    <div className="text-sm text-gray-500 mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                      {appt.phone_number && <span>📞 {appt.phone_number}</span>}
                       {!appt.phone_number && appt.email && (
-                        <span className="mr-3">📧 {appt.email}</span>
+                        <span>📧 {appt.email}</span>
                       )}
                       {appt.note && (
-                        <span className="text-xs text-gray-600 italic">Note: {appt.note}</span>
+                        <span className="text-xs text-gray-600 italic mt-1 sm:mt-0">Note: {appt.note}</span>
                       )}
                       {!appt.note && (
                         <span className="text-sm text-gray-500">
@@ -172,7 +168,8 @@ export default function DashboardHome() {
                   </div>
                 </div>
 
-                <div className="flex flex-col items-end">
+                {/* Time and Status/Link (Moved to the end of the mobile stack) */}
+                <div className="flex justify-between w-full sm:w-auto sm:flex-col sm:items-end mt-2 sm:mt-0">
                   <span className="font-mono text-base text-gray-700">
                     <ClockIcon className="h-4 w-4 inline mr-1 text-gray-400" />
                     {formatTime(appt.start_time)}

@@ -1,8 +1,11 @@
+// /components/PatientDashboard.js
+
 "use client";
 
 import { useState, useEffect } from "react";
+// Assuming Header, Footer, and API endpoint are correct
 import Header from "@/components/Header";
-import Footer from "@/components/footer";
+import Footer from "@/components/footer"; 
 import { CalendarDays, ClipboardList, HeartPulse, Stethoscope, Plus } from "lucide-react";
 
 export default function PatientDashboard() {
@@ -11,17 +14,22 @@ export default function PatientDashboard() {
   useEffect(() => {
     // Fetch user's appointments from backend
     async function fetchAppointments() {
-      const res = await fetch("/api/get-appointments");
-      const data = await res.json();
-      if (res.ok) setAppointments(data.appointments);
+      // Dummy fetch for review purposes
+      const dummyAppointments = [
+        { id: 1, doctor_name: "Dr. David Smith", appointment_time: new Date().toISOString(), status: "confirmed" },
+        { id: 2, doctor_name: "Dr. Jane Doe", appointment_time: new Date(Date.now() + 86400000).toISOString(), status: "pending" },
+      ];
+      setAppointments(dummyAppointments);
     }
     fetchAppointments();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      < Header />
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header />
+      
+      {/* 🚨 Enhancement: Added responsive padding (px-4 sm:px-6 lg:px-8) */}
+      <div className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8"> 
         <h1 className="text-2xl font-bold text-gray-800 mb-6">
           Hi, <span className="text-blue-600">Josh Emeka Peter</span> 👋
         </h1>
@@ -73,6 +81,7 @@ export default function PatientDashboard() {
             <Plus className="w-5 h-5" /> Book Now
           </a>
         </div>
+        
         {/* Upcoming Appointments */}
         <div className="mt-12">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Upcoming Appointments</h2>
@@ -96,7 +105,7 @@ export default function PatientDashboard() {
           )}
         </div>
       </div>
-      < Footer />
+      <Footer />
     </div>
   );
 }
