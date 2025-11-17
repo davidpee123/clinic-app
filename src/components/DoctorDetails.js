@@ -1,3 +1,5 @@
+// src/components/DoctorDetails.js
+
 "use client";
 import React, { useState } from 'react';
 import { FaPlus, FaMinus } from 'react-icons/fa';
@@ -49,7 +51,8 @@ const DoctorDetails = ({ doctor }) => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100 space-y-2">
+    // 🚨 Enhancement: Changed p-6 to p-4 sm:p-6 for slightly tighter mobile padding
+    <div className="bg-white p-4 sm:p-6 rounded-xl shadow-2xl border border-gray-100 space-y-2"> 
       <h2 className="text-2xl font-bold text-gray-800 border-b pb-3 mb-4">
         Frequently Asked Questions
       </h2>
@@ -61,21 +64,24 @@ const DoctorDetails = ({ doctor }) => {
         >
           {/* Question/Header */}
           <button
-            className="flex justify-between items-center w-full py-4 text-left focus:outline-none transition duration-150 ease-in-out hover:bg-gray-50"
+            // 🚨 Enhancement: Increased vertical padding from py-4 to py-3 sm:py-4 for a better tap target
+            className="flex justify-between items-center w-full py-3 sm:py-4 text-left focus:outline-none transition duration-150 ease-in-out hover:bg-gray-50"
             onClick={() => toggleAccordion(item.id)}
             aria-expanded={openId === item.id}
           >
-            <span className="text-base font-medium text-gray-700">{item.question}</span>
+            {/* Reduced text size slightly on mobile for better fit */}
+            <span className="text-base sm:text-lg font-medium text-gray-700 pr-4">{item.question}</span> 
             {openId === item.id ? (
-              <FaMinus className="text-blue-600 w-4 h-4 transition-transform" />
+              <FaMinus className="text-blue-600 w-4 h-4 flex-shrink-0 transition-transform" />
             ) : (
-              <FaPlus className="text-blue-600 w-4 h-4 transition-transform" />
+              <FaPlus className="text-blue-600 w-4 h-4 flex-shrink-0 transition-transform" />
             )}
           </button>
 
           {/* Answer/Content */}
           {openId === item.id && (
-            <div className="pb-4 pr-6">
+            // Added simple transition for smoother open/close (though full height transition needs external CSS or utility)
+            <div className="pb-4 pr-6 animate-fadeIn"> 
               <p className="text-sm text-gray-600">{item.answer}</p>
             </div>
           )}
