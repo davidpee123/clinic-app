@@ -3,11 +3,11 @@ import { Heart, MapPin, Phone, Mail  } from "lucide-react";
 export default function Footer() {
   return (
            
-          <footer className="bg-gray-900 text-white py-16">
+          <footer className="bg-gray-900 text-white py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="grid md:grid-cols-4 gap-8">
                 <div>
-                  <div className="flex items-center gap-2 mb-6">
+                  <div className="flex items-center gap-2 mb-8">
                     <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
                       <Heart className="w-5 h-5 text-black" />
                     </div>
@@ -39,16 +39,6 @@ export default function Footer() {
                     <li>
                       <a href="#about" className="text-gray-400 hover:text-white transition-colors">
                         About
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#contact" className="text-gray-400 hover:text-white transition-colors">
-                        Contact
-                      </a>
-                    </li>
-                    <li>
-                      <a href="/register-doctor" className="text-grey-400 hover:text-white transition-colors">
-                        become a Doctor
                       </a>
                     </li>
                   </ul>

@@ -1,85 +1,139 @@
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-// ✅ Handle GET request — availability check
-export async function GET(request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const doctorId = searchParams.get("doctorId");
-    const date = searchParams.get("date");
-
-    if (!doctorId || !date) {
-      return NextResponse.json(
-        { message: "Missing required parameters: doctorId and date" },
-        { status: 400 }
-      );
-    }
-
-    // Mock available times
-    let availableTimes = ["8:00AM", "9:00AM", "10:00AM", "11:00AM", "1:00PM", "3:00PM"];
-
-    // Simulate a busy slot for demonstration
-    if (doctorId === "2") {
-      availableTimes = availableTimes.filter((t) => t !== "9:00AM");
-    }
-
-    return NextResponse.json({ availableTimes }, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching availability:", error);
-    return NextResponse.json({ message: "Server error" }, { status: 500 });
-  }
+// Helper: convert "8:00AM" → "8:00 AM"
+function normalizeTimeString(time) {
+    return time.replace(/(AM|PM)$/i, " $1").trim();
 }
 
-// ✅ Handle POST request — create booking
+// Helper: convert to safe 24-hour format
+function convertTo24Hour(date, timeRaw) {
+    const normalized = normalizeTimeString(timeRaw);
+    const dateTime = new Date(`${date} ${normalized}`);
+
+    if (isNaN(dateTime)) {
+        console.error("❌ Failed date parsing:", `${date} ${normalized}`);
+        return null;
+    }
+
+    return dateTime;
+}
+
+// Strong fix: calculate end time
+function calculateEndTime(selectedDate, startTimeRaw, durationMinutes) {
+    const start = convertTo24Hour(selectedDate, startTimeRaw);
+    if (!start) return null;
+
+    const end = new Date(start.getTime() + durationMinutes * 60000);
+
+    // Return formatted end time in AM/PM
+    return end.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+    });
+}
+
+function generateDummyVideoLink(id) {
+    return `https://dummy.video.link/meeting/${id}`;
+}
+
 export async function POST(request) {
-  try {
-    const data = await request.json();
+    try {
+        const cookieStore = cookies();
+        const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
-    if (
-      !data.name ||
-      !data.email ||
-      !data.doctorId ||
-      !data.selectedDate ||
-      !data.selectedTime
-    ) {
-      return NextResponse.json(
-        {
-          message:
-            "Missing required booking information. Please check name, email, doctor, date, and time.",
-        },
-        { status: 400 }
-      );
+        const {
+            data: { user },
+            error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+            return NextResponse.json({ message: "User not authenticated" }, { status: 401 });
+        }
+
+        const payload = await request.json();
+        if (!payload.doctorId || !payload.selectedDate || !payload.selectedTime || !payload.name) {
+            return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+        }
+
+        // Duration mock
+        let durationMinutes = 30;
+        if (payload.serviceName?.includes("Cardiology")) durationMinutes = 45;
+        if (payload.serviceName?.includes("Pediatric")) durationMinutes = 20;
+
+        const endTimeRaw = calculateEndTime(
+            payload.selectedDate,
+            payload.selectedTime,
+            durationMinutes
+        );
+
+        if (!endTimeRaw) {
+            return NextResponse.json({ message: "Invalid time format" }, { status: 400 });
+        }
+
+        const startDateTimeString = `${payload.selectedDate} ${normalizeTimeString(payload.selectedTime)}`;
+        const endDateTimeString = `${payload.selectedDate} ${endTimeRaw}`;
+
+        const referenceId = crypto.randomUUID();
+        const videoLink = generateDummyVideoLink(referenceId);
+
+        const appointmentRecord = {
+            id: referenceId,
+            doctor_id: payload.doctorId,
+            user_id: user.id,
+            patient_name: payload.name,
+            patient_email: payload.email || "",
+            patient_phone: payload.phone || "",
+            doctor_name: payload.doctorName || "Unknown Doctor",
+            start_time: startDateTimeString,
+            end_time: endDateTimeString,
+            appointment_time: startDateTimeString,
+            status: "Booked",
+            service_name: payload.serviceName || "General Consultation",
+            notes: payload.notes || "",
+            video_link: videoLink,
+            reason_for_visit: payload.reasonForVisit || "",
+            created_at: new Date().toISOString(),
+        };
+
+        const { error } = await supabase.from("appointments").insert([appointmentRecord]);
+
+        if (error) {
+            return NextResponse.json({ message: error.message }, { status: 500 });
+        }
+
+        return NextResponse.json({
+            message: "Booking successful",
+            appointment: appointmentRecord,
+        });
+    } catch (err) {
+        return NextResponse.json({ message: "Internal server error" }, { status: 500 });
     }
+}
 
-    // Simulate conflict for Dr. David Peter at 9AM
-    if (data.selectedTime === "9:00AM" && data.doctorId === "2") {
-      return NextResponse.json(
-        {
-          message:
-            "Conflict detected: The 9:00 AM slot is no longer available. Please select another time.",
-          isConflict: true,
-        },
-        { status: 409 }
-      );
+export async function GET() {
+    try {
+        const cookieStore = cookies();
+        const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+            return NextResponse.json({ message: "User not authenticated" }, { status: 401 });
+        }
+
+        const { data, error } = await supabase
+            .from("appointments")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("start_time", { ascending: true });
+
+        if (error) throw error;
+
+        return NextResponse.json({ appointments: data });
+    } catch (error) {
+        return NextResponse.json({ message: "Failed to fetch appointments" }, { status: 500 });
     }
-
-    const bookingReference = `REF-${Math.floor(Math.random() * 90000) + 10000}`;
-    console.log(`[BOOKING SUCCESS] Ref: ${bookingReference}`, data);
-
-    return NextResponse.json(
-      {
-        message: "Booking successfully confirmed.",
-        referenceId: bookingReference,
-        doctorName: data.doctorName,
-        bookedDate: data.selectedDate,
-        bookedTime: data.selectedTime,
-      },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error processing booking request:", error);
-    return NextResponse.json(
-      { message: "Internal server error. Could not finalize the booking." },
-      { status: 500 }
-    );
-  }
 }

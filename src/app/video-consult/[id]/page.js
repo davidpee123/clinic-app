@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
 
 // Import your structural and navigation components
 import DoctorProfile from '@/components/DoctorProfile';
-import Navbar from "@/components/Navbar";
+import Header from '@/components/Header';
 import Footer from "@/components/footer";
 
 // Define the page component as 'async'
@@ -29,7 +29,7 @@ export default async function DoctorDetailPage({ params }) {
     // Handle case where doctor ID is invalid or data fetch fails
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Navbar />
+        <Header />
         <div className="flex-1 text-center py-20">
           <h1 className="text-3xl font-bold text-red-600">Profile Not Available</h1>
           <p className="text-gray-500">The doctor with ID: {doctorId} could not be found.</p>
@@ -42,7 +42,7 @@ export default async function DoctorDetailPage({ params }) {
   // --- 3. Render the Profile Page with Unique Data ---
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
+      <Header />
 
       <main className="flex-1">
         {/* Pass the uniquely fetched doctor data to the profile component */}

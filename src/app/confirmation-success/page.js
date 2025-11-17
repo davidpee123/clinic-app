@@ -49,7 +49,7 @@ export default function ConfirmationSuccessPage() {
                             Return to Homepage
                         </button>
                     </Link>
-                    <Link href="/account" passHref>
+                    <Link href="/patient-portal" passHref>
                         <button className="w-full py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition duration-150">
                             View My Appointments
                         </button>

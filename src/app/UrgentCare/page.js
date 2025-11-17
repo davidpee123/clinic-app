@@ -7,7 +7,7 @@ import { HeartPulse, ChevronRight } from 'lucide-react';
 // Component for the pill-shaped condition button
 const ConditionPill = ({ title }) => (
     // The button shape and shadow match the image, using rounded-full for the pill effect
-    <Link href={`/consult?condition=${encodeURIComponent(title)}`} className="group flex justify-between items-center px-6 py-3 w-full bg-white border border-gray-300 rounded-full shadow-md hover:border-blue-500 hover:shadow-lg transition-all duration-200">
+    <Link href={`/doctors?condition=${encodeURIComponent(title)}`} className="group flex justify-between items-center px-6 py-3 w-full bg-white border border-gray-300 rounded-full shadow-md hover:border-blue-500 hover:shadow-lg transition-all duration-200">
         <span className="text-base font-medium text-gray-800 group-hover:text-blue-700">
             {title}
         </span>

@@ -1,14 +1,20 @@
-// ✅ src/app/api/get-appointments/route.js
+
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+// ⚠️ IMPORTANT: The 'request' object must be included to access URL search parameters.
+export async function GET(request) {
   try {
-    const cookieStore = await cookies();
+    // 1. Read date filtering parameters from the URL
+    const { searchParams } = new URL(request.url);
+    const startString = searchParams.get('start');
+    const endString = searchParams.get('end');
+
+    const cookieStore = cookies();
     const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
 
-    // ✅ Get logged-in user
+    // 2. Get logged-in user (Doctor)
     const {
       data: { user },
       error: userError,
@@ -21,16 +27,25 @@ export async function GET() {
       );
     }
 
-    // ✅ Fetch upcoming appointments for this user
-    const { data, error } = await supabase
+    // 3. Build the base query
+    let query = supabase
       .from("appointments")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("appointment_time", { ascending: true });
+      .select("*") // Selects all columns, including video_link, phone_number, email, note
+      .eq("doctor_id", user.id) // ✅ FIX: Use 'doctor_id' for consistency with frontend logic
+      .order("start_time", { ascending: true });
+
+    // 4. Apply time filtering for "Today's Appointments" if parameters are present
+    if (startString && endString) {
+      query = query.gte("start_time", startString).lt("start_time", endString);
+    }
+
+    // 5. Execute the query
+    const { data, error } = await query;
 
     if (error) throw error;
 
     return NextResponse.json({ appointments: data }, { status: 200 });
+
   } catch (error) {
     console.error("❌ Error fetching appointments:", error);
     return NextResponse.json(

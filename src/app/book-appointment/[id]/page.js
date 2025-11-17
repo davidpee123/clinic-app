@@ -3,7 +3,7 @@
 // 1. Imports for Server Component data fetching
 import React from 'react';
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from 'next/headers';
+import { cookies } from 'next/headers'; // Import the cookies function
 
 // Import your structural and navigation components
 import DoctorProfile from '@/components/DoctorProfile';
@@ -13,11 +13,17 @@ import Header from '@/components/Header';
 // Define the page component as 'async'
 export default async function DoctorDetailPage({ params }) {
   // Get the unique doctor ID from the URL (e.g., "12345")
-  const doctorId = params.id; 
+  const doctorId = params.id;
 
   // --- 2. Initialize Supabase and Fetch Data ---
-  const supabase = createServerComponentClient({ cookies });
-  
+
+  // CRITICAL FIX: The cookies() function from 'next/headers' is called synchronously 
+  // but is treated as a dynamic API. It MUST NOT be awaited.
+  const cookieStore = cookies();
+
+  // Pass the synchronous cookieStore function to createServerComponentClient
+  const supabase = createServerComponentClient({ cookies: () => cookieStore });
+
   const { data: doctorData, error } = await supabase
     .from("doctors")
     .select("*")

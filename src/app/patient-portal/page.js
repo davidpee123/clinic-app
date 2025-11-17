@@ -55,17 +55,24 @@ export default function PatientDashboard() {
           </div>
         </div>
 
-        {/* Quick Actions */}
         <div className="flex flex-wrap gap-4 justify-center sm:justify-start">
-          <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-medium shadow">
+
+          {/* Urgent Care Link */}
+          <a
+            href="/UrgentCare"
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-medium shadow transition-colors duration-200"
+          >
             <HeartPulse className="w-5 h-5" /> Urgent Care
-          </button>
+          </a>
 
-          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-medium shadow">
+          {/* Book Now Link */}
+          <a
+            href="/doctors"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-medium shadow transition-colors duration-200"
+          >
             <Plus className="w-5 h-5" /> Book Now
-          </button>
+          </a>
         </div>
-
         {/* Upcoming Appointments */}
         <div className="mt-12">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Upcoming Appointments</h2>
