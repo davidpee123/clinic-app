@@ -1,5 +1,3 @@
-// src/components/DoctorCard.js
-
 import React from 'react';
 import Link from 'next/link';
 import { FaUserMd, FaVideo, FaClock, FaCheckCircle, FaStar } from 'react-icons/fa';
@@ -11,9 +9,9 @@ const DoctorCard = ({ doctor }) => {
         degree: "N/A",
         in_person_cost: 0,
         video_cost: 0,
-        wait_time: "N/A",
+        wait_time: "N/A", // This should be a value like "Under 5 Min"
         experience_years: 0,
-        satisfaction_rate: 0,
+        satisfaction_rate: 0, // This should be a value like 100
         image_url: "/default-doctor-avatar.png",
     };
 
@@ -32,105 +30,115 @@ const DoctorCard = ({ doctor }) => {
     const bookAppointmentPath = `/book-appointment/${doctor.id}`;
 
     const formatCost = (cost) => {
+        // Assuming the cost is in NGN (Naira) from the image example
         return cost && cost > 0 ? `₦${cost.toLocaleString()}` : "Free";
     };
 
+    // Helper component for the Metric Boxes (e.g., Wait Time, Experience)
+    const MetricBox = ({ icon: Icon, value, label, valueClass = "text-gray-800", iconClass = "text-green-600" }) => (
+        <div className="flex items-center space-x-2 py-4">
+            <div className={`p-1.5 rounded-full ${iconClass}`}>
+                <Icon className="w-5 h-5" />
+            </div>
+            <div className="flex flex-col">
+                <span className={`text-lg font-semibold ${valueClass}`}>{value}</span>
+                <span className="text-xs text-gray-500">{label}</span>
+            </div>
+        </div>
+    );
+
     return (
-        <div className="bg-white rounded-xl shadow-lg hover:shadow-xl p-4 sm:p-6 border border-gray-100 transition-shadow duration-300">
-            <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-6">
-                
-                {/* 1. Profile Image Section */}
-                <div className="flex-shrink-0 mb-2 sm:mb-0 self-center">
-                    <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center border-4 border-blue-50">
-                        {/* Image/Placeholder Logic */}
-                        {image_url && image_url !== "/default-doctor-avatar.png" ? (
-                            <img
-                                src={image_url}
-                                alt={`Profile of ${name}`}
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <span className="text-4xl font-bold text-gray-600">
-                                {name ? name.charAt(4) : 'D'}
-                            </span>
-                        )}
-                    </div>
-                </div>
+        // The main container is now full width and responsive
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 transition-shadow duration-300 w-full">
+            
+            {/* Outer Flex Container: Holds doctor details and action buttons, side-by-side on large screens */}
+            <div className="flex flex-col lg:flex-row justify-between items-start space-y-4 lg:space-y-0">
 
-                {/* 2. Details, Costs, and Metrics Section (Split into left and right content) */}
-                <div className="flex-grow flex flex-col sm:flex-row justify-between w-full">
+                {/* Left Section: Image, Details, Costs, and Metrics */}
+                <div className="flex flex-grow space-x-4 sm:space-x-6 items-start">
                     
-                    {/* LEFT: Name and Costs (Stacked on ALL screens) */}
-                    <div className="mb-4 sm:mb-0 sm:pr-6">
-                        <Link href={`/doctors/${doctor.id}`}>
-                            <h2 className="text-2xl font-bold text-blue-800 hover:text-blue-600 transition-colors cursor-pointer">{name}</h2>
-                        </Link>
-                        <p className="text-base text-gray-500 mb-4">{degree}</p>
+                    {/* Profile Image Section */}
+                    <div className="flex-shrink-0 self-start">
+                        <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center border-4 border-white shadow-md">
+                            {/* Image/Placeholder Logic (Keep existing logic) */}
+                            {image_url && image_url !== "/default-doctor-avatar.png" ? (
+                                <img
+                                    src={image_url}
+                                    alt={`Profile of ${name}`}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <span className="text-4xl font-bold text-gray-600">
+                                    {name ? name.charAt(4) : 'D'}
+                                </span>
+                            )}
+                        </div>
+                    </div>
 
-                        {/* Cost Details (Now always wrapped to new lines on mobile) */}
-                        <div className="flex flex-col space-y-2 text-sm mt-3">
-                            <div className="flex items-center space-x-2">
+                    {/* Details and Metrics Column */}
+                    <div className="flex flex-col w-full">
+                        
+                        {/* Name and Degree */}
+                        <Link href={`/doctors/${doctor.id}`}>
+                            <h2 className="text-xl font-bold text-gray-800 hover:text-blue-600 transition-colors cursor-pointer">{name}</h2>
+                        </Link>
+                        <p className="text-sm text-gray-500 mb-4">{degree}</p>
+
+                        {/* Costs (Aligned horizontally like the image) */}
+                        <div className="flex flex-col sm:flex-row sm:space-x-6 space-y-2 sm:space-y-0 text-sm mb-4">
+                            <div className="flex items-center space-x-1.5">
                                 <FaUserMd className="text-blue-600 flex-shrink-0" />
-                                <span className="font-medium text-gray-700">In-person:</span>
+                                <span className="text-gray-600">In-person visits : </span>
                                 <span className="text-blue-600 font-bold">{formatCost(in_person_cost)}</span>
                             </div>
-                            <div className="flex items-center space-x-2">
+                            <div className="flex items-center space-x-1.5">
                                 <FaVideo className="text-green-600 flex-shrink-0" />
-                                <span className="font-medium text-gray-700">Video Visit:</span>
+                                <span className="text-gray-600">Video visits : </span>
                                 <span className="text-green-600 font-bold">{formatCost(video_cost)}</span>
                             </div>
                         </div>
-                    </div>
-                    
-                    {/* RIGHT: Metrics & Actions (The most complex part) */}
-                    <div className="flex flex-col justify-between w-full sm:w-auto">
-                        
-                        {/* Metrics: Changed from horizontal division to a vertical/wrapped stack for better mobile layout */}
-                        <div className="grid grid-cols-3 sm:grid-cols-1 gap-2 border-t pt-4 sm:border-none sm:pt-0 mb-4 sm:mb-6">
+
+                        {/* Metrics Grid (Wait Time, Experience, Satisfaction) - Uses a 3-column grid for the side-by-side look */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 divide-x divide-gray-200 border-y border-gray-200 mt-2 sm:mt-4">
                             
                             {/* Wait Time */}
-                            <div className="flex flex-col items-center sm:items-start p-1 sm:p-0">
-                                <div className="flex items-center text-blue-600 text-base font-bold">
-                                    <FaClock className="mr-1 text-sm" />
-                                    {wait_time}
-                                </div>
-                                <p className="text-xs text-gray-500 mt-0.5">Wait Time</p>
+                            <div className="flex flex-col items-center justify-center p-2">
+                                <FaClock className="text-green-500 w-5 h-5 mb-1" />
+                                <span className="text-sm font-bold text-gray-800">{wait_time}</span>
+                                <span className="text-xs text-gray-500">Wait Time</span>
                             </div>
-                            
-                            {/* Experience */}
-                            <div className="flex flex-col items-center sm:items-start p-1 sm:p-0">
-                                <div className="text-base font-bold text-gray-800">
-                                    {experience_years}+ Years
-                                </div>
-                                <p className="text-xs text-gray-500 mt-0.5">Experience</p>
-                            </div>
-                            
-                            {/* Satisfaction */}
-                            <div className="flex flex-col items-center sm:items-start p-1 sm:p-0">
-                                <div className="flex items-center text-orange-500 text-base font-bold">
-                                    <FaStar className="mr-1 w-3 h-3" />
-                                    {satisfaction_rate}%
-                                </div>
-                                <p className="text-xs text-gray-500 mt-0.5">Satisfied</p>
-                            </div>
-                        </div>
 
-                        {/* 3. Appointment Links Section (Full width on mobile, stacked) */}
-                        <div className="flex flex-col space-y-3 w-full sm:w-56 mt-2">
-                            <Link
-                                href={videoConsultPath}
-                                className="text-center w-full px-4 py-2.5 text-sm font-semibold border border-green-600 text-green-600 rounded-lg hover:bg-green-50 transition duration-150 shadow-sm"
-                            >
-                                Video Consultation
-                            </Link>
-                            <Link
-                                href={bookAppointmentPath}
-                                className="text-center w-full px-4 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 shadow-md"
-                            >
-                                Book Appointment
-                            </Link>
+                            {/* Experience */}
+                            <div className="flex flex-col items-center justify-center p-2">
+                                <span className="text-lg font-bold text-gray-800">{experience_years} Years</span>
+                                <span className="text-xs text-gray-500">Experience</span>
+                            </div>
+
+                            {/* Satisfaction */}
+                            <div className="flex flex-col items-center justify-center p-2">
+                                <FaCheckCircle className="text-green-500 w-5 h-5 mb-1" />
+                                <span className="text-sm font-bold text-gray-800">{satisfaction_rate}%</span>
+                                <span className="text-xs text-gray-500">Satisfied Patients</span>
+                            </div>
                         </div>
                     </div>
+                </div>
+
+
+                {/* Right Section: Action Buttons (Stacked vertically) */}
+                <div className="flex flex-col space-y-3 w-full lg:w-48 lg:min-w-[192px] mt-4 lg:mt-0">
+                    <Link
+                        href={videoConsultPath}
+                        className="text-center w-full px-4 py-2 text-sm font-semibold border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition duration-150 shadow-sm"
+                    >
+                        Video Consultation
+                    </Link>
+                    <Link
+                        href={bookAppointmentPath}
+                        className="text-center w-full px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 shadow-md"
+                    >
+                        Book Appointment
+                    </Link>
                 </div>
             </div>
         </div>

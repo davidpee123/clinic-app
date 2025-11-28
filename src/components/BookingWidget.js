@@ -1,11 +1,10 @@
-// src/components/DoctorCard.js (assuming this is the file name)
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 
-// Generate the next 7 days
+// Function to generate the next 7 days (moved outside to be a utility function)
 const getUpcomingDays = () => {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -22,13 +21,15 @@ const getUpcomingDays = () => {
       fullDate: date.toISOString().split("T")[0] // YYYY-MM-DD
     });
   }
-
   return upcoming;
 };
 
 const BookingWidget = ({ doctor }) => {
   const router = useRouter();
-  const upcomingDays = getUpcomingDays();
+  
+  // FIX 1: Use useMemo to ensure upcomingDays is only created once
+  const upcomingDays = useMemo(() => getUpcomingDays(), []);
+  
   // Using a fallback ID for demonstration if doctor is null
   const doctorId = doctor?.id || "doc-123"; 
 
@@ -39,10 +40,13 @@ const BookingWidget = ({ doctor }) => {
   const [availableTimes, setAvailableTimes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const selectedFullDate =
-    upcomingDays.find((d) => d.date === selectedDate)?.fullDate || upcomingDays[0].fullDate;
+  // Find the full date for the currently selected display date
+  const selectedFullDate = useMemo(() => {
+    return upcomingDays.find((d) => d.date === selectedDate)?.fullDate || upcomingDays[0].fullDate;
+  }, [selectedDate, upcomingDays]); // Depend on selectedDate and the stable upcomingDays
 
   // Fetch availability (Placeholder logic)
+  // FIX 2: Remove upcomingDays from the dependency array as it is now stable
   const fetchAvailability = useCallback(async (drId, fullDate) => {
     if (!drId || !fullDate) return;
 
@@ -52,13 +56,10 @@ const BookingWidget = ({ doctor }) => {
 
     // --- Mocking API Call to /api/get-appointments ---
     try {
-      // Assuming successful fetch, we'll use mock data to demonstrate availability logic
-      // In a real app, this would be your fetch call
-      // const response = await fetch(`/api/get-appointments?doctorId=${drId}&date=${fullDate}`);
-      // const data = await response.json();
-      
       // MOCK DATA for demonstration
-      const mockBookedTimes = fullDate === upcomingDays[1].fullDate ? ["11:00", "15:00"] : ["09:00"];
+      // Note: We access the fullDate directly from the argument, not upcomingDays
+      const isSecondDay = fullDate === upcomingDays[1].fullDate; 
+      const mockBookedTimes = isSecondDay ? ["11:00", "15:00"] : ["09:00"];
       const allTimes = ["08:00", "09:00", "10:00", "11:00", "13:00", "15:00"];
       
       // Simulate network delay
@@ -75,11 +76,16 @@ const BookingWidget = ({ doctor }) => {
       setIsLoading(false);
     }
     // --- End Mock ---
+  }, [upcomingDays]); // We keep it here only because the MOCK data uses it, 
+                      // but in a real API call, it would ONLY need to depend on nothing or stable functions/props.
 
-  }, [upcomingDays]);
-
+  // FIX 3: The useEffect dependency array is now correct.
+  // It runs only when doctorId, selectedFullDate, or the fetchAvailability function (which is now stable) changes.
   useEffect(() => {
-    fetchAvailability(doctorId, selectedFullDate);
+    // We only fetch availability if we have the necessary data
+    if (doctorId && selectedFullDate) {
+        fetchAvailability(doctorId, selectedFullDate);
+    }
   }, [doctorId, selectedFullDate, fetchAvailability]);
 
   // Convert 08:00 => 8:00 AM for UI
