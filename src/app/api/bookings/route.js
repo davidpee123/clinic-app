@@ -78,11 +78,9 @@ export async function POST(request) {
 
         const referenceId = crypto.randomUUID();
         const videoLink = generateDummyVideoLink(referenceId);
-
         const appointmentRecord = {
             id: referenceId,
             doctor_id: payload.doctorId,
-            user_id: user.id,
             patient_name: payload.name,
             patient_email: payload.email || "",
             patient_phone: payload.phone || "",
@@ -96,6 +94,8 @@ export async function POST(request) {
             video_link: videoLink,
             reason_for_visit: payload.reasonForVisit || "",
             created_at: new Date().toISOString(),
+            //  <-- ADD THE MISSING COLUMN HERE -->
+            appointment_date: payload.selectedDate, // Use the date string from the client
         };
 
         const { error } = await supabase.from("appointments").insert([appointmentRecord]);

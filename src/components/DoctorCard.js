@@ -1,148 +1,113 @@
-import React from 'react';
-import Link from 'next/link';
-import { FaUserMd, FaVideo, FaClock, FaCheckCircle, FaStar } from 'react-icons/fa';
+// components/DoctorCard.js
 
-const DoctorCard = ({ doctor }) => {
-    // Ensure robust default values
-    const defaultDoctor = {
-        name: "Dr. Specialist",
-        degree: "N/A",
-        in_person_cost: 0,
-        video_cost: 0,
-        wait_time: "N/A", // This should be a value like "Under 5 Min"
-        experience_years: 0,
-        satisfaction_rate: 0, // This should be a value like 100
-        image_url: "/default-doctor-avatar.png",
-    };
+import { Clock, Briefcase, DollarSign, Video, CheckCircle, MapPin } from 'lucide-react';
 
+export default function DoctorCard({ doctor }) {
+    // Ensure all these properties are being selected in the main fetch query
     const {
-        name,
-        degree,
-        in_person_cost,
-        video_cost,
-        wait_time,
-        experience_years,
-        satisfaction_rate,
-        image_url,
-    } = { ...defaultDoctor, ...doctor };
+        id,
+        full_name,
+        specialization,
+        wait_time, // e.g., "Under 5"
+        experience_years, // e.g., 10
+        satisfaction_rate, // e.g., 100
+        in_person_fee, // e.g., 15000
+        video_fee, // e.g., 3000
+        city, // e.g., Lagos
+    } = doctor;
 
-    const videoConsultPath = `/video-consult/${doctor.id}`;
-    const bookAppointmentPath = `/book-appointment/${doctor.id}`;
-
-    const formatCost = (cost) => {
-        // Assuming the cost is in NGN (Naira) from the image example
-        return cost && cost > 0 ? `₦${cost.toLocaleString()}` : "Free";
+    // Helper for formatting currency (assuming Nigerian Naira '₦' based on image)
+    const formatCurrency = (amount) => {
+        if (amount === 0 || amount === '0' || amount === null || amount === 'Free') return 'Free';
+        // Adjust based on your actual currency handling
+        return `₦${Number(amount).toLocaleString()}`;
     };
 
-    // Helper component for the Metric Boxes (e.g., Wait Time, Experience)
-    const MetricBox = ({ icon: Icon, value, label, valueClass = "text-gray-800", iconClass = "text-green-600" }) => (
-        <div className="flex items-center space-x-2 py-4">
-            <div className={`p-1.5 rounded-full ${iconClass}`}>
-                <Icon className="w-5 h-5" />
-            </div>
-            <div className="flex flex-col">
-                <span className={`text-lg font-semibold ${valueClass}`}>{value}</span>
-                <span className="text-xs text-gray-500">{label}</span>
-            </div>
-        </div>
-    );
+    const patientImage = doctor.image_url || '/default-avatar.png';
 
     return (
-        // The main container is now full width and responsive
-        <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 transition-shadow duration-300 w-full">
+        <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 flex flex-col lg:flex-row justify-between items-stretch transition duration-200 hover:shadow-xl">
             
-            {/* Outer Flex Container: Holds doctor details and action buttons, side-by-side on large screens */}
-            <div className="flex flex-col lg:flex-row justify-between items-start space-y-4 lg:space-y-0">
-
-                {/* Left Section: Image, Details, Costs, and Metrics */}
-                <div className="flex flex-grow space-x-4 sm:space-x-6 items-start">
+            {/* Left Section: Info and Fees */}
+            <div className="flex flex-col sm:flex-row gap-6 flex-grow">
+                {/* Avatar and Primary Info */}
+                <div className="flex flex-col items-center sm:items-start flex-shrink-0">
+                    <img
+                        src={patientImage}
+                        alt={`Dr. ${full_name}`}
+                        className="w-24 h-24 rounded-full object-cover border-4 border-teal-100 mb-3"
+                    />
+                    <h3 className="text-xl font-bold text-blue-800 text-center sm:text-left">{full_name}</h3>
+                    <p className="text-sm text-gray-500 mb-4">{specialization || 'General Practitioner'}</p>
+                </div>
+                
+                {/* Fees and Location Details */}
+                <div className="sm:ml-8 flex flex-col justify-start space-y-2 text-sm text-gray-700 w-full sm:w-auto mt-4 sm:mt-0">
                     
-                    {/* Profile Image Section */}
-                    <div className="flex-shrink-0 self-start">
-                        <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center border-4 border-white shadow-md">
-                            {/* Image/Placeholder Logic (Keep existing logic) */}
-                            {image_url && image_url !== "/default-doctor-avatar.png" ? (
-                                <img
-                                    src={image_url}
-                                    alt={`Profile of ${name}`}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <span className="text-4xl font-bold text-gray-600">
-                                    {name ? name.charAt(4) : 'D'}
-                                </span>
-                            )}
-                        </div>
+                    {/* Location */}
+                    <div className="flex items-center space-x-2">
+                        <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <span className="font-medium">{city || 'Lagos, Nigeria'}</span>
                     </div>
 
-                    {/* Details and Metrics Column */}
-                    <div className="flex flex-col w-full">
-                        
-                        {/* Name and Degree */}
-                        <Link href={`/doctors/${doctor.id}`}>
-                            <h2 className="text-xl font-bold text-gray-800 hover:text-blue-600 transition-colors cursor-pointer">{name}</h2>
-                        </Link>
-                        <p className="text-sm text-gray-500 mb-4">{degree}</p>
+                    {/* In-person Fee */}
+                    <div className="flex items-center space-x-2">
+                        <DollarSign className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                        <span className="font-medium">In-person visits:</span>
+                        <span className="font-semibold text-gray-900">{formatCurrency(in_person_fee)}</span>
+                    </div>
 
-                        {/* Costs (Aligned horizontally like the image) */}
-                        <div className="flex flex-col sm:flex-row sm:space-x-6 space-y-2 sm:space-y-0 text-sm mb-4">
-                            <div className="flex items-center space-x-1.5">
-                                <FaUserMd className="text-blue-600 flex-shrink-0" />
-                                <span className="text-gray-600">In-person visits : </span>
-                                <span className="text-blue-600 font-bold">{formatCost(in_person_cost)}</span>
-                            </div>
-                            <div className="flex items-center space-x-1.5">
-                                <FaVideo className="text-green-600 flex-shrink-0" />
-                                <span className="text-gray-600">Video visits : </span>
-                                <span className="text-green-600 font-bold">{formatCost(video_cost)}</span>
-                            </div>
-                        </div>
-
-                        {/* Metrics Grid (Wait Time, Experience, Satisfaction) - Uses a 3-column grid for the side-by-side look */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 divide-x divide-gray-200 border-y border-gray-200 mt-2 sm:mt-4">
-                            
-                            {/* Wait Time */}
-                            <div className="flex flex-col items-center justify-center p-2">
-                                <FaClock className="text-green-500 w-5 h-5 mb-1" />
-                                <span className="text-sm font-bold text-gray-800">{wait_time}</span>
-                                <span className="text-xs text-gray-500">Wait Time</span>
-                            </div>
-
-                            {/* Experience */}
-                            <div className="flex flex-col items-center justify-center p-2">
-                                <span className="text-lg font-bold text-gray-800">{experience_years} Years</span>
-                                <span className="text-xs text-gray-500">Experience</span>
-                            </div>
-
-                            {/* Satisfaction */}
-                            <div className="flex flex-col items-center justify-center p-2">
-                                <FaCheckCircle className="text-green-500 w-5 h-5 mb-1" />
-                                <span className="text-sm font-bold text-gray-800">{satisfaction_rate}%</span>
-                                <span className="text-xs text-gray-500">Satisfied Patients</span>
-                            </div>
-                        </div>
+                    {/* Video Fee */}
+                    <div className="flex items-center space-x-2">
+                        <Video className="w-4 h-4 text-green-500 flex-shrink-0" />
+                        <span className="font-medium">Video visits:</span>
+                        <span className="font-semibold text-gray-900">{formatCurrency(video_fee)}</span>
                     </div>
                 </div>
+            </div>
 
+            {/* Middle Section: Metrics (Grid Layout) */}
+            {/* Separator for medium screens and up */}
+            <div className="grid grid-cols-3 gap-4 border-t pt-4 mt-4 lg:border-t-0 lg:border-l lg:pt-0 lg:mt-0 lg:pl-6 lg:ml-6 flex-shrink-0">
+                {/* Wait Time */}
+                <MetricBox Icon={Clock} label="Wait Time" value={wait_time || "N/A"} unit={wait_time && wait_time !== "N/A" ? "Min" : ""} color="text-green-500" />
+                
+                {/* Experience */}
+                <MetricBox Icon={Briefcase} label="Experience" value={experience_years || 0} unit="Years" color="text-teal-500" />
+                
+                {/* Satisfaction */}
+                <MetricBox Icon={CheckCircle} label="Satisfaction" value={satisfaction_rate || 0} unit="%" color="text-green-600" />
+            </div>
 
-                {/* Right Section: Action Buttons (Stacked vertically) */}
-                <div className="flex flex-col space-y-3 w-full lg:w-48 lg:min-w-[192px] mt-4 lg:mt-0">
-                    <Link
-                        href={videoConsultPath}
-                        className="text-center w-full px-4 py-2 text-sm font-semibold border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition duration-150 shadow-sm"
-                    >
-                        Video Consultation
-                    </Link>
-                    <Link
-                        href={bookAppointmentPath}
-                        className="text-center w-full px-4 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-150 shadow-md"
-                    >
-                        Book Appointment
-                    </Link>
-                </div>
+            {/* Right Section: Actions */}
+            <div className="flex flex-col space-y-2 mt-6 lg:mt-0 lg:ml-8 flex-shrink-0 w-full sm:w-64">
+                <button
+                    className="py-3 px-4 rounded-lg border border-blue-500 text-blue-500 hover:bg-blue-50 transition duration-150 font-medium"
+                    onClick={() => console.log(`Navigating to video consult details for ${full_name}`)}
+                >
+                    Video Consultation
+                </button>
+                <a 
+                    href={`/booking/${id}`} // Navigates to the booking page for this doctor
+                    className="py-3 px-4 rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition duration-150 font-medium text-center"
+                >
+                    Book Appointment
+                </a>
             </div>
         </div>
     );
-};
+}
 
-export default DoctorCard;
+// Helper Component for Metrics
+const MetricBox = ({ Icon, label, value, unit, color }) => (
+    <div className="flex flex-col items-center justify-center text-center">
+        <Icon className={`h-6 w-6 ${color} mb-1`} />
+        <span className="text-xl font-bold text-gray-900 leading-none">
+            {value}
+        </span>
+        <span className="text-sm font-medium text-gray-500 leading-tight">
+            {unit}
+        </span>
+        <span className="text-xs text-gray-500 mt-1">{label}</span>
+    </div>
+);

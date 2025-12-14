@@ -7,46 +7,44 @@ export default function PatientDashboard() {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     // Placeholder user data since we can't read cookies/Supabase session here
-    const [userName, setUserName] = useState("Patient User"); 
-    const [userId, setUserId] = useState("loading-user-id"); 
-    
- 
+    const [userName, setUserName] = useState("Patient User");
+    const [userId, setUserId] = useState("loading-user-id");
+
+
     useEffect(() => {
+        // src\app\patient-portal\page.js (Client-side - Fixed)
         async function fetchPatientAppointments() {
             setLoading(true);
             try {
-                // Fetch from the new dedicated patient appointment route
                 const response = await fetch('/api/patient-appointments', {
                     method: 'GET',
-                    // Note: Supabase Auth Helpers handles session via cookies automatically
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Failed to fetch appointments.');
+                    // Check if the response is JSON (like your API route sends for 401/500)
+                    const contentType = response.headers.get("content-type");
+                    let errorMessage = `HTTP error! Status: ${response.status}.`;
+
+                    if (contentType && contentType.includes("application/json")) {
+                        // If it's JSON, parse it for a specific error message
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorMessage;
+                    } else {
+                        // If it's HTML (like a 404/500 error page), read as text for debugging
+                        const errorText = await response.text();
+                        // Optionally log the full HTML here for debugging: console.error(errorText);
+                        errorMessage = `Server error returned HTML (Status: ${response.status}). Check API path.`;
+                    }
+
+                    throw new Error(errorMessage);
                 }
 
-                const data = await response.json();
-                
-                // Update user details based on data if available (optional)
-                if (data.user_email) {
-                    setUserName(data.user_email.split('@')[0]);
-                }
-                if (data.user_id) {
-                    setUserId(data.user_id);
-                }
-
-                // Sort and set appointments
-                const sortedAppointments = data.appointments.sort((a, b) => 
-                    new Date(a.appointment_time) - new Date(b.appointment_time)
-                );
-
-                setAppointments(sortedAppointments);
+                const data = await response.json(); // Safely parse JSON for a successful 200 response
+                // ... rest of your success logic ...
 
             } catch (error) {
                 console.error("Error fetching patient appointments:", error.message);
                 setAppointments([]);
-                // In a real app, you might redirect to a login page on 401
             } finally {
                 setLoading(false);
             }
@@ -65,10 +63,10 @@ export default function PatientDashboard() {
 
 
     // Derived State for stats
-    const pendingAppointments = useMemo(() => 
+    const pendingAppointments = useMemo(() =>
         appointments.filter((a) => a.status && a.status.toLowerCase() === "pending").length
-    , [appointments]);
-    
+        , [appointments]);
+
     // Helper to format date for display
     const formatAppointmentTime = (isoString) => {
         try {
@@ -87,17 +85,17 @@ export default function PatientDashboard() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-inter">
-                <Header />
-            
-            <div className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8"> 
+            <Header />
+
+            <div className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
                 <h1 className="text-3xl font-extrabold text-gray-800 mb-6">
                     Welcome back, <span className="text-blue-600">{userName}</span>!
                 </h1>
-                
+
                 {/* User ID for debugging/sharing */}
                 <div className="text-xs text-gray-500 mb-6 flex flex-wrap items-center gap-2">
-                    <User className="w-3 h-3 text-gray-400"/>
-                    <span className="font-medium">Patient ID:</span> 
+                    <User className="w-3 h-3 text-gray-400" />
+                    <span className="font-medium">Patient ID:</span>
                     <span className="font-mono bg-gray-200 px-2 py-0.5 rounded text-gray-800 break-all">
                         {userId}
                     </span>
@@ -152,7 +150,7 @@ export default function PatientDashboard() {
                         <Plus className="w-5 h-5" /> Book New Appointment
                     </a>
                 </div>
-                
+
                 {/* Upcoming Appointments */}
                 <div className="mt-12">
                     <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Your Upcoming & Past Appointments</h2>
@@ -171,12 +169,11 @@ export default function PatientDashboard() {
                     ) : (
                         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                             {appointments.map((a) => (
-                                <div 
-                                    key={a.id} 
-                                    className={`bg-white shadow-lg rounded-xl p-5 border-l-4 transition-shadow ${
-                                        a.status && a.status.toLowerCase() === 'confirmed' ? 'border-green-500' : 
-                                        a.status && a.status.toLowerCase() === 'pending' ? 'border-yellow-500' : 'border-gray-400'
-                                    }`}
+                                <div
+                                    key={a.id}
+                                    className={`bg-white shadow-lg rounded-xl p-5 border-l-4 transition-shadow ${a.status && a.status.toLowerCase() === 'confirmed' ? 'border-green-500' :
+                                            a.status && a.status.toLowerCase() === 'pending' ? 'border-yellow-500' : 'border-gray-400'
+                                        }`}
                                 >
                                     <h3 className="text-gray-800 font-bold text-lg mb-1">{a.doctor_name || a.title || "Consultation"}</h3>
                                     <p className="text-sm text-gray-600 mb-2">
@@ -184,11 +181,10 @@ export default function PatientDashboard() {
                                         {formatAppointmentTime(a.appointment_time || a.start_time)}
                                     </p>
                                     <p className="text-sm text-gray-500 mt-1 capitalize">
-                                        Status: 
-                                        <span className={`font-semibold ml-1 ${
-                                            a.status && a.status.toLowerCase() === 'confirmed' ? 'text-green-600' : 
-                                            a.status && a.status.toLowerCase() === 'pending' ? 'text-yellow-600' : 'text-gray-600'
-                                        }`}>
+                                        Status:
+                                        <span className={`font-semibold ml-1 ${a.status && a.status.toLowerCase() === 'confirmed' ? 'text-green-600' :
+                                                a.status && a.status.toLowerCase() === 'pending' ? 'text-yellow-600' : 'text-gray-600'
+                                            }`}>
                                             {a.status}
                                         </span>
                                     </p>
