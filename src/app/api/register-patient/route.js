@@ -1,7 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
-// ⚠️ ORIGINAL CLIENT: Uses ANON Key for public-facing signup (Step 1)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -9,65 +8,73 @@ const supabase = createClient(
 
 export async function POST(req) {
   try {
-    console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-    console.log("Anon Key:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-    // ------------
     const body = await req.json();
+    const { email, password, firstName, lastName, role } = body;
 
-    // 1️⃣ Create a Supabase Auth user (with ANON client)
+    // 1. Validate that a role is provided (doctor or patient)
+    if (!role || !['doctor', 'patient'].includes(role)) {
+      throw new Error("Invalid or missing user role.");
+    }
+
+    // 2. Create the Auth User
     const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: body.email,
-      password: body.password,
+      email,
+      password,
       options: {
         emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/login`,
+        data: {
+          full_name: `${firstName} ${lastName}`,
+          user_role: role // 'doctor' or 'patient'
+        },
       },
     });
 
     if (authError) throw authError;
-
-    // 2️⃣ Get the newly created user ID
     const userId = authData.user?.id;
+    if (!userId) throw new Error("User ID missing after signup.");
 
-    if (!userId) {
-      // This should ideally never happen after a successful signup
-      throw new Error("User ID missing after signup.");
-    }
+    // 3. Initialize Admin Client
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceKey) throw new Error("Server configuration error.");
 
-    // 🛑 NEW CODE BLOCK: Initialize Service Role Client (Step 3 Setup)
-    // This client bypasses RLS and timing issues to ensure the DB insert works.
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY // 👈 Use the Service Role Key here
+      serviceKey
     );
 
-    // 4️⃣ Create a matching patient record using the SERVICE ROLE client
-    const { error: patientError } = await supabaseAdmin.from("patients").insert([
-      {
-        id: userId, // 👈 Links to the new auth.users record
-        full_name: `${body.firstName} ${body.lastName}`,
-        email: body.email,
-        phone: body.phone,
-        gender: body.gender,
-        date_of_birth: body.dateOfBirth,
-        // Add all other patient fields here
-      },
-    ]);
+    // 4. DYNAMIC ROUTING: Insert into the correct table
+    // We determine the table name directly from the role passed by the frontend
+    const targetTable = role === 'doctor' ? 'doctors' : 'patients';
 
-    if (patientError) throw patientError;
+    const insertData = {
+      id: userId,
+      full_name: `${firstName} ${lastName}`,
+      email: email,
+      phone: body.phone,
+    };
 
-    // 5️⃣ Respond to the frontend
+    // Add role-specific fields
+    if (role === 'doctor') {
+      insertData.specialization = body.specialization || 'General';
+    } else {
+      insertData.gender = body.gender;
+      insertData.date_of_birth = body.dateOfBirth;
+    }
+
+    const { error: dbError } = await supabaseAdmin
+      .from(targetTable)
+      .insert([insertData]);
+
+    if (dbError) throw dbError;
+
     return NextResponse.json(
-      {
-        success: true,
-        message:
-          "Registration successful! A confirmation email has been sent. Please verify your email before signing in.",
-      },
+      { success: true, message: `Registration as ${role} successful!` },
       { status: 200 }
     );
   } catch (err) {
     console.error("❌ Registration Error:", err);
     return NextResponse.json(
-      { success: false, message: err.message || "Unexpected server error" },
+      { success: false, message: err.message },
       { status: 500 }
     );
   }
