@@ -17,7 +17,7 @@ const getUpcomingDays = () => {
 
     upcoming.push({
       day: days[date.getDay()],
-      date: `${months[date.getMonth()]} ${date.getDate()}`, 
+      date: `${months[date.getMonth()]} ${date.getDate()}`,
       fullDate: date.toISOString().split("T")[0] // YYYY-MM-DD
     });
   }
@@ -26,12 +26,12 @@ const getUpcomingDays = () => {
 
 const BookingWidget = ({ doctor }) => {
   const router = useRouter();
-  
+
   // FIX 1: Use useMemo to ensure upcomingDays is only created once
   const upcomingDays = useMemo(() => getUpcomingDays(), []);
-  
+
   // Using a fallback ID for demonstration if doctor is null
-  const doctorId = doctor?.id || "doc-123"; 
+  const doctorId = doctor?.id || "doc-123";
 
   const [appointmentType, setAppointmentType] = useState("In person");
   const [selectedDate, setSelectedDate] = useState(upcomingDays[0].date);
@@ -58,12 +58,12 @@ const BookingWidget = ({ doctor }) => {
     try {
       // MOCK DATA for demonstration
       // Note: We access the fullDate directly from the argument, not upcomingDays
-      const isSecondDay = fullDate === upcomingDays[1].fullDate; 
+      const isSecondDay = fullDate === upcomingDays[1].fullDate;
       const mockBookedTimes = isSecondDay ? ["11:00", "15:00"] : ["09:00"];
       const allTimes = ["08:00", "09:00", "10:00", "11:00", "13:00", "15:00"];
-      
+
       // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 500)); 
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Remove booked times
       const freeTimes = allTimes.filter((t) => !mockBookedTimes.includes(t));
@@ -77,14 +77,14 @@ const BookingWidget = ({ doctor }) => {
     }
     // --- End Mock ---
   }, [upcomingDays]); // We keep it here only because the MOCK data uses it, 
-                      // but in a real API call, it would ONLY need to depend on nothing or stable functions/props.
+  // but in a real API call, it would ONLY need to depend on nothing or stable functions/props.
 
   // FIX 3: The useEffect dependency array is now correct.
   // It runs only when doctorId, selectedFullDate, or the fetchAvailability function (which is now stable) changes.
   useEffect(() => {
     // We only fetch availability if we have the necessary data
     if (doctorId && selectedFullDate) {
-        fetchAvailability(doctorId, selectedFullDate);
+      fetchAvailability(doctorId, selectedFullDate);
     }
   }, [doctorId, selectedFullDate, fetchAvailability]);
 
@@ -95,18 +95,18 @@ const BookingWidget = ({ doctor }) => {
     const ampm = hour >= 12 ? "PM" : "AM";
     hour = hour % 12 || 12;
     // Remove leading zero for single-digit hours (e.g., 08:00 -> 8:00 AM)
-    return `${hour}:${m}${ampm}`; 
+    return `${hour}:${m}${ampm}`;
   };
 
   // Continue booking
   const handleContinueBooking = () => {
     if (!selectedTime) {
       // In a real app, use a toast/modal instead of console error
-      console.error("Please select a time slot first."); 
+      console.error("Please select a time slot first.");
       return;
     }
 
-    const selectedIsoTime = selectedTime; 
+    const selectedIsoTime = selectedTime;
     const typeForUrl = appointmentType.replace(" ", "-").toLowerCase();
 
     const destination = `/final-booking?type=${typeForUrl}&date=${selectedFullDate}&time=${selectedIsoTime}&doctorId=${doctorId}`;
@@ -116,10 +116,11 @@ const BookingWidget = ({ doctor }) => {
   return (
     <div className="bg-white p-5 sm:p-6 rounded-xl shadow-2xl border border-gray-100">
 
+     
       <h2 className="text-xl font-extrabold mb-4 text-gray-800 border-b pb-3">
-        Book Appointment with Dr. {doctor?.name ? doctor.name.split(' ')[1] : 'Specialist'}
+        {/* Change .name to .full_name */}
+        Book Appointment with {doctor?.full_name ? `Dr. ${doctor.full_name}` : "your Specialist"}
       </h2>
-
       {/* Appointment Type */}
       <div className="mb-6">
         <p className="text-sm font-semibold text-gray-700 mb-2">Choose the appointment type</p>
@@ -156,8 +157,8 @@ const BookingWidget = ({ doctor }) => {
         {/* Calendar Navigation and Days Container */}
         <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 overflow-hidden">
           {/* Disabled Left Button */}
-          <button 
-            disabled 
+          <button
+            disabled
             className="p-3 text-gray-400 bg-gray-100 cursor-not-allowed hidden sm:block"
           >
             <FaChevronLeft className="w-4 h-4" />
@@ -169,11 +170,10 @@ const BookingWidget = ({ doctor }) => {
               <div
                 key={index}
                 onClick={() => setSelectedDate(item.date)}
-                className={`flex flex-col items-center flex-shrink-0 p-3 rounded-lg cursor-pointer w-16 h-16 transition-all duration-200 border-2 ${
-                  item.date === selectedDate
-                    ? "bg-blue-600 text-white border-blue-700 shadow-lg"
-                    : "bg-white text-gray-800 border-gray-200 hover:bg-blue-50 hover:border-blue-300"
-                }`}
+                className={`flex flex-col items-center flex-shrink-0 p-3 rounded-lg cursor-pointer w-16 h-16 transition-all duration-200 border-2 ${item.date === selectedDate
+                  ? "bg-blue-600 text-white border-blue-700 shadow-lg"
+                  : "bg-white text-gray-800 border-gray-200 hover:bg-blue-50 hover:border-blue-300"
+                  }`}
               >
                 <span className="text-xs font-medium uppercase">{item.day}</span>
                 <span className="text-lg font-extrabold">{item.date.split(" ")[1]}</span>
@@ -182,8 +182,8 @@ const BookingWidget = ({ doctor }) => {
           </div>
 
           {/* Disabled Right Button */}
-          <button 
-            disabled 
+          <button
+            disabled
             className="p-3 text-gray-400 bg-gray-100 cursor-not-allowed hidden sm:block"
           >
             <FaChevronRight className="w-4 h-4" />
@@ -210,11 +210,10 @@ const BookingWidget = ({ doctor }) => {
               <button
                 key={time}
                 onClick={() => setSelectedTime(time)}
-                className={`px-4 py-2 border rounded-full text-base font-medium transition-all duration-150 shadow-sm ${
-                  selectedTime === time
-                    ? "bg-orange-500 text-white border-orange-500 shadow-md transform scale-105"
-                    : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
-                }`}
+                className={`px-4 py-2 border rounded-full text-base font-medium transition-all duration-150 shadow-sm ${selectedTime === time
+                  ? "bg-orange-500 text-white border-orange-500 shadow-md transform scale-105"
+                  : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+                  }`}
               >
                 {convertToDisplay(time)}
               </button>
@@ -225,11 +224,10 @@ const BookingWidget = ({ doctor }) => {
 
       {/* Continue Button */}
       <button
-        className={`w-full mt-8 py-3.5 font-extrabold text-lg rounded-xl transition duration-200 shadow-lg transform hover:scale-[1.01] ${
-          selectedTime
-            ? "bg-blue-600 hover:bg-blue-700 text-white"
-            : "bg-gray-300 text-gray-500 cursor-not-allowed"
-        }`}
+        className={`w-full mt-8 py-3.5 font-extrabold text-lg rounded-xl transition duration-200 shadow-lg transform hover:scale-[1.01] ${selectedTime
+          ? "bg-blue-600 hover:bg-blue-700 text-white"
+          : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
         onClick={handleContinueBooking}
         disabled={!selectedTime || isLoading}
       >

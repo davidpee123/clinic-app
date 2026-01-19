@@ -1,61 +1,74 @@
-
-"use client"
+"use client";
 
 import { useEffect, useState, useMemo } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import Header from "@/components/Header";
 import DoctorCard from "@/components/DoctorCard";
-import SearchFilter from "@/components/SearchFilter"; // <-- Import new component
+import SearchFilter from "@/components/SearchFilter";
 
 export default function DoctorsList() {
     const supabase = createClientComponentClient();
-    const [doctors, setDoctors] = useState([]);
-    const [allSpecialties, setAllSpecialties] = useState([]); // State for dropdown options
-    const [selectedSpecialty, setSelectedSpecialty] = useState(''); // State for active filter
-    const [loading, setLoading] = useState(true);
 
-    // Fetch Specialties and Doctors
+    const [doctors, setDoctors] = useState([]);
+    const [allSpecialties, setAllSpecialties] = useState([]);
+    const [selectedSpecialty, setSelectedSpecialty] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
+
+    // ✅ CORRECT AUTH CHECK (SESSION-BASED)
     useEffect(() => {
-        const fetchDoctorsAndSpecialties = async () => {
+        const getSession = async () => {
+            const { data, error } = await supabase.auth.getSession();
+
+            if (error) {
+                console.error("Auth error:", error);
+                setUser(null);
+                return;
+            }
+
+            setUser(data.session?.user ?? null);
+        };
+
+        getSession();
+    }, [supabase]);
+
+    // ✅ FETCH DOCTORS & SPECIALTIES
+    useEffect(() => {
+        const fetchInitialData = async () => {
             setLoading(true);
 
-            // 1. Fetch ALL Specialties for the dropdown
-            const { data: specialtiesData, error: specError } = await supabase
+            // Fetch specialties
+            const { data: specialtiesData } = await supabase
                 .from("doctors")
                 .select("specialization")
-                .not("specialization", "is", null); // Exclude null/empty specialties
-            
+                .not("specialization", "is", null);
+
             if (specialtiesData) {
-                // Deduplicate and store unique specialties
-                const uniqueSpecialties = [...new Set(specialtiesData.map(d => d.specialization))].sort();
-                setAllSpecialties(['All Specialties', ...uniqueSpecialties]); // Add 'All' option
+                const uniqueSpecialties = [
+                    ...new Set(specialtiesData.map(d => d.specialization)),
+                ].sort();
+
+                setAllSpecialties(["All Specialties", ...uniqueSpecialties]);
             }
-            if (specError) console.error("Error fetching specialties:", specError);
 
-
-            // 2. Fetch Doctors based on the selected specialty
+            // Fetch doctors
             let doctorQuery = supabase
                 .from("doctors")
                 .select("*")
-                .order('full_name', { ascending: true });
-            
-            // Apply filter if a specialty is selected (and it's not the default 'All')
-            if (selectedSpecialty && selectedSpecialty !== 'All Specialties') {
-                doctorQuery = doctorQuery.eq('specialization', selectedSpecialty);
+                .order("full_name", { ascending: true });
+
+            if (selectedSpecialty && selectedSpecialty !== "All Specialties") {
+                doctorQuery = doctorQuery.eq("specialization", selectedSpecialty);
             }
-            
-            const { data: doctorData, error: doctorError } = await doctorQuery;
 
-            if (doctorError) console.error("Error fetching doctors:", doctorError);
-            else setDoctors(doctorData || []);
-
+            const { data: doctorData } = await doctorQuery;
+            setDoctors(doctorData || []);
             setLoading(false);
         };
-        
-        fetchDoctorsAndSpecialties();
-    }, [supabase, selectedSpecialty]); // Re-run effect when specialty changes
 
-    // Memoize the count of specialists
+        fetchInitialData();
+    }, [supabase, selectedSpecialty]);
+
     const specialistCount = useMemo(() => doctors.length, [doctors]);
 
     return (
@@ -63,32 +76,32 @@ export default function DoctorsList() {
             <Header />
 
             <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 py-10 w-full">
-                <h1 className="text-3xl font-bold mb-8 text-center text-blue-800">
-                    Our Specialists
-                </h1>
 
-                {/* --- Search and Filter Area --- */}
                 <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-between items-center">
-                    <SearchFilter 
+                    <SearchFilter
                         specialties={allSpecialties}
                         selectedSpecialty={selectedSpecialty}
                         setSelectedSpecialty={setSelectedSpecialty}
                         loading={loading}
                     />
                     <p className="text-lg font-semibold text-gray-700">
-                        {specialistCount} Specialist{specialistCount !== 1 ? 's' : ''} Found
+                        {specialistCount} Specialist
+                        {specialistCount !== 1 ? "s" : ""} Found
                     </p>
                 </div>
-                {/* ----------------------------- */}
 
                 {loading ? (
-                    <p className="text-center text-gray-500 py-10">Loading doctor list...</p>
-                ) : specialistCount === 0 ? (
-                    <p className="text-center text-gray-500">No doctors available for the selected criteria.</p>
+                    <div className="flex justify-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    </div>
                 ) : (
-                    <div className="flex flex-col gap-6"> 
+                    <div className="flex flex-col gap-6">
                         {doctors.map((doctor) => (
-                            <DoctorCard key={doctor.id} doctor={doctor} />
+                            <DoctorCard
+                                key={doctor.id}
+                                doctor={doctor}
+                                isLoggedIn={!!user} 
+                            />
                         ))}
                     </div>
                 )}
