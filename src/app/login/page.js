@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { supabase } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
+import Swal from 'sweetalert2' // ADDED
 import {
   Card,
   CardContent,
@@ -28,9 +29,28 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-    if (searchParams.get("registered") === "true") {
+    // Check for registration success
+    if (searchParams.get("registered") === "true" || searchParams.get("registrationSuccess") === "true") {
       setShowRegistrationSuccess(true)
     }
+
+    const wasRedirected = searchParams.get("next") || searchParams.get("redirect")
+
+    if (wasRedirected) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Login Required',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#193cb8',
+        buttonsStyling: true,
+        customClass: {
+          popup: 'rounded-xl',
+          title: 'text-2xl font-semibold text-gray-700',
+        }
+      });
+    }
+    // ----------------------------------------
   }, [searchParams])
 
   const handleSubmit = async (e) => {
@@ -56,7 +76,8 @@ export default function LoginPage() {
         return
       }
 
-      const redirectTo = searchParams.get("redirect") || "/patient-portal"
+      // If middleware sent them here, redirect them BACK to where they wanted to go
+      const redirectTo = searchParams.get("next") || searchParams.get("redirect") || "/patient-portal"
       router.replace(redirectTo)
     } catch (err) {
       console.error(err)
@@ -67,10 +88,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       <Header />
 
-      {/* Login Form */}
       <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Patient Login</h1>
@@ -134,9 +153,13 @@ export default function LoginPage() {
               </div>
 
               <div className="flex items-center justify-between">
-                <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-blue-600 hover:underline"
+                >
                   Forgot password?
                 </Link>
+
               </div>
 
               <Button

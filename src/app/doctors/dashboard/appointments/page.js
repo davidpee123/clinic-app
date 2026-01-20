@@ -74,11 +74,10 @@ export default function AppointmentsList() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-4 text-sm font-bold transition-all relative ${
-                activeTab === tab
+              className={`pb-4 text-sm font-bold transition-all relative ${activeTab === tab
                   ? "text-[#7B61FF]"
                   : "text-gray-400 hover:text-gray-600"
-              }`}
+                }`}
             >
               {tab}
               {activeTab === tab && (
@@ -149,9 +148,8 @@ export default function AppointmentsList() {
                 <React.Fragment key={appt.id}>
                   {/* Main row */}
                   <tr
-                    className={`hover:bg-gray-50/50 transition-colors cursor-pointer ${
-                      appt.status === "rejected" ? "bg-red-50/30" : ""
-                    }`}
+                    className={`hover:bg-gray-50/50 transition-colors cursor-pointer ${appt.status === "rejected" ? "bg-red-50/30" : ""
+                      }`}
                     onClick={() =>
                       setExpandedId(expandedId === appt.id ? null : appt.id)
                     }
@@ -199,41 +197,42 @@ export default function AppointmentsList() {
                   {expandedId === appt.id && (
                     <tr>
                       <td colSpan="4" className="bg-gray-50 px-8 py-4">
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 text-sm">
                           <p><strong>Patient Name:</strong> {appt.patient_name}</p>
-                          <p><strong>Phone:</strong> {appt.phone || "N/A"}</p>
-                          <p><strong>Email:</strong> {appt.email || "N/A"}</p>
+                          <p><strong>Phone:</strong> {appt.patient_phone || "N/A"}</p>
+                          <p><strong>Email:</strong> {appt.patient_email || "N/A"}</p>
                           <p><strong>Date:</strong> {appt.appointment_time}</p>
                           <p><strong>Status:</strong> {appt.status}</p>
 
-                          <div className="flex flex-wrap gap-2 mt-2">
+                          {/* CONTACT ACTIONS */}
+                          <div className="flex flex-wrap gap-3 mt-3">
                             {/* WhatsApp */}
-                            {appt.phone && (
+                            {appt.patient_phone && (
                               <a
-                                href={`https://wa.me/${appt.phone}?text=Hello%20${appt.patient_name},%20your%20appointment%20has%20been%20received.`}
+                                href={`https://wa.me/${appt.patient_phone}?text=Hello%20${appt.patient_name},%20your%20appointment%20has%20been%20received.`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-bold"
+                                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-bold"
                               >
                                 WhatsApp
                               </a>
                             )}
 
                             {/* SMS */}
-                            {appt.phone && (
+                            {appt.patient_phone && (
                               <a
-                                href={`sms:${appt.phone}?body=Hello ${appt.patient_name}, your appointment has been received.`}
-                                className="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-bold"
+                                href={`sms:${appt.patient_phone}?body=Hello ${appt.patient_name}, your appointment has been received.`}
+                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold"
                               >
                                 SMS
                               </a>
                             )}
 
                             {/* Email */}
-                            {appt.email && (
+                            {appt.patient_email && (
                               <a
-                                href={`mailto:${appt.email}?subject=Appointment&body=Hello ${appt.patient_name}, your appointment has been received.`}
-                                className="bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-bold"
+                                href={`mailto:${appt.patient_email}?subject=Appointment&body=Hello ${appt.patient_name}, your appointment has been received.`}
+                                className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-xs font-bold"
                               >
                                 Email
                               </a>
@@ -243,6 +242,7 @@ export default function AppointmentsList() {
                       </td>
                     </tr>
                   )}
+
                 </React.Fragment>
               ))
             )}

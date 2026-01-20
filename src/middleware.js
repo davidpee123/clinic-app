@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function middleware(req) {
     const res = NextResponse.next();
+
     const supabase = createMiddlewareClient({ req, res });
 
     const {
@@ -11,8 +12,9 @@ export async function middleware(req) {
 
     if (!session) {
         const loginUrl = req.nextUrl.clone();
-        loginUrl.pathname = "/signup";
+        loginUrl.pathname = "/login";
         loginUrl.searchParams.set("next", req.nextUrl.pathname);
+
         return NextResponse.redirect(loginUrl);
     }
 
